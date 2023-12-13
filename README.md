@@ -3,10 +3,12 @@
 This is probably my third attempt at creating cells.
 My goal with this project is to create some basic cellular life that can evolve.
 These cells will function as follows:
-- Cells have four genes, two input, two output
+- Cells have four genes, at least one has to be input, and one output
 - Cells can die
 - Cells can create other cells, but only if they have enough energy
 - Cells cannot be created from nothing
+  - Except at the begining
+  - Extinction cannot be reverted
 - Cells require energy, and will gradually consume it
 
 These rules mentioned three complex things that require their own rules, genetics, death, and energy. \
@@ -28,7 +30,7 @@ The rules of death are as follows:
   - Living things cannot arise from dead things
 - Dead things cannot independently act
 - Dead things cannot create more dead things
-- Living things can die, either by being murdered, running out of energy, or due to old age
+- Living things can die, either by being murdered, running out of energy, suicide, or old age
   - Death due to old age has a random chance of occuring after 1116 updates, with a probibility of $\frac{1}{(2^{32})}$ per update
 - The equation of the remaining energy in a cell after it dies is $\text{dead energy} = \begin{cases} 2 & \quad \text{if living energy} < 4 \\ \text{living energy}/2 & \quad \text{if living energy} \le 32 \\  \text{living energy}/4 & \quad \text{otherwise} \end{cases} $
 

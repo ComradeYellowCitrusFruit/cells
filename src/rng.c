@@ -1,3 +1,5 @@
+/* spdx-identifier: GPL-3.0-only */
+
 #include <x86intrin.h>
 #include <stdlib.h>
 #include <string.h>

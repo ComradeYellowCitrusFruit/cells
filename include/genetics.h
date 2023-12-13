@@ -20,6 +20,31 @@
 */
 #define GENE_OUTPUT_HAS_STRENGTH_BIT 0x1    <<  0 
 
+/* the defines for actual genetic code */
+/* inputs first */
+#define GENE_OBSTACLE_X       0x1
+#define GENE_OBSTACLE_Y       0x2
+#define GENE_OBSTACLE_FORWARD 0x3
+#define GENE_FOOD_X           0x4
+#define GENE_FOOD_Y           0x5
+#define GENE_FOOD_FORWARD     0x6
+#define GENE_DENSITY          0x7
+#define GENE_ENERGY           0x8
+#define GENE_LAST_X           0x9
+#define GENE_LAST_Y           0xa
+#define GENE_AGE              0xb
+#define GENE_OSCILATOR        0xc
+#define GENE_PHEROMONES       0xe
+
+/* outputs first */
+#define GENE_MOVE_X          0x1
+#define GENE_MOVE_Y          0x2
+#define GENE_MOVE_FORWARD    0x3
+#define GENE_EMIT_PHEROMONES 0x4
+#define GENE_SET_OSCILATOR   0x5
+#define GENE_KILL_FORWARD    0x6
+#define GENE_COMMIT_SUICIDE  0x7
+
 typedef uint32_t gene_t;
 
 /* strength uses the fp16 format 

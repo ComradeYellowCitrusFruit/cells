@@ -1,3 +1,5 @@
+/* spdx-identifier: GPL-3.0-only */
+
 #include "include/math.h"
 #include "include/genetics.h"
 

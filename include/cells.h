@@ -1,3 +1,5 @@
+/* spdx-identifier: GPL-3.0-only */
+
 #ifndef CELLS_CELLS_H__
 #define CELLS_CELLS_H__
 

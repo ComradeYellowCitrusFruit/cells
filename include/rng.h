@@ -1,3 +1,5 @@
+/* spdx-identifier: GPL-3.0-only */
+
 #ifndef CELLS_RNG_H__
 #define CELLS_RNG_H__
 
