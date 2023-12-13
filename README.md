@@ -18,9 +18,9 @@ Genes function as follows:
 - Output genes have a domain of $[-4, 4]$
 - Genes are passed on from parents to their children
 - Randomly, a single random bit can be flipped in the genes of the child or parent
-  - The chance of it happening in the parent or child is $\frac{1}{2^{16}}$
-  - The chance of it happening in both is $\frac{1}{2^{64}}$
-- Cells randomly give birth as long as they have enough energy, with a chance of $\frac{1}{2^56}$ per update.
+  - The chance of it happening in the parent or child is $\frac{1}{(2^{16})}$
+  - The chance of it happening in both is $\frac{1}{(2^{64})}$
+- Cells randomly give birth as long as they have enough energy, with a chance of $\frac{1}{(2^{24})}$ per update.
 
 The rules of death are as follows:
 - Death is irreversible
@@ -28,13 +28,14 @@ The rules of death are as follows:
   - Living things cannot arise from dead things
 - Dead things cannot independently act
 - Dead things cannot create more dead things
-- Living things can die, either by being murdered, or running out of energy
+- Living things can die, either by being murdered, running out of energy, or due to old age
+  - Death due to old age has a random chance of occuring after 1116 updates, with a probibility of $\frac{1}{(2^{32})}$ per update
 - The equation of the remaining energy in a cell after it dies is $\text{dead energy} = \begin{cases} 2 & \quad \text{if living energy} < 4 \\ \text{living energy}/2 & \quad \text{if living energy} \le 32 \\  \text{living energy}/4 & \quad \text{otherwise} \end{cases} $
 
 The rules of energy are as follows:
 - All cells require energy
-- Energy is consumed at a rate of $\text{consumption}=1 + \text{actions taken}^{\frac{3}{2}}$
-  - This does not apply to murders, which have a rate of $\text{consumption} = (\text{victim energy} - \text{dead energy}) + 2$
+- Energy is consumed at $\text{consumption}=1 + \text{actions taken}^{\frac{3}{2}}$
+  - This does not apply to murders, which operate at $\text{consumption} = (\text{victim energy} - \text{dead energy}) + 2$
 - Energy is always treated as an integer value
 - Energy is gained through murder, and consuming dead things
   - Murders grant the $\text{dead energy}$ value of the victim
