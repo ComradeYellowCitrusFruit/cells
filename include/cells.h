@@ -10,20 +10,20 @@
 #include "include/rng.h"
 
 struct cell {
-    uint64_t id;
+	uint64_t id;
 
-    uint32_t energy;
-    unsigned int age;
+	uint32_t energy;
+	unsigned int age;
 
-    unsigned int oscilator_period;
-    unsigned int oscilator_ctr;
+	unsigned int oscilator_period;
+	unsigned int oscilator_ctr;
 
-    gene_t genes[4];
+	gene_t genes[4];
 };
 
 struct dead_thing {
-    uint64_t id;
-    uint32_t energy;
+	uint64_t id;
+	uint32_t energy;
 };
 
 void gen_random_cell(struct cell *c, generator_handle g);

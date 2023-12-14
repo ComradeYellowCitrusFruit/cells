@@ -75,7 +75,8 @@ void init_world(struct world *w,
 
 			default:
 			INDEX_WORLD((*w), ax, ay).type = 1;
-			INDEX_WORLD((*w), ax, ay).dead.id = gen64(main_rng);
+			INDEX_WORLD((*w), ax, ay)
+				.dead.id = gen64(main_rng);
 			INDEX_WORLD((*w), ax, ay)
 				.dead.energy = isqrt(gen32(main_rng));
 			break;
