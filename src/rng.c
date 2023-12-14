@@ -1,4 +1,7 @@
-/* spdx-identifier: GPL-3.0-only */
+/*  SPDX-License-Identifier: GPL-3.0-only
+*   Cellular life simulation following strict rules
+*   Copyright (C) 2023 Teresa Maria Rivera
+*/
 
 #include <x86intrin.h>
 #include <stdlib.h>
@@ -23,14 +26,14 @@
 	a ^= ROTL(d + c, 18))
 
 struct rng_generator {
-    uint64_t seed[2];
-    uint64_t iv;
-    uint64_t ctr;
-    union {
-    	uint64_t state[8]; /* 512/64 */
+	uint64_t seed[2];
+	uint64_t iv;
+	uint64_t ctr;
+	union {
+		uint64_t state[8]; /* 512/64 */
 	uint8_t bytes[64]; /* 512/8 */
-    };
-    uint64_t byte_ctr;
+	};
+	uint64_t byte_ctr;
 };
 
 /* aes for fun */

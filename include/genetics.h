@@ -1,3 +1,8 @@
+/*  SPDX-License-Identifier: GPL-3.0-only
+*   Cellular life simulation following strict rules
+*   Copyright (C) 2023 Teresa Maria Rivera
+*/
+
 #ifndef CELLS_GENETICS_H__
 #define CELLS_GENETICS_H__
 
