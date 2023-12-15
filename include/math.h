@@ -9,6 +9,6 @@
 #include <stdint.h>
 
 float map_range(float x, float src1, float src2, float dst1, float dst2);
-uint32_t isqrt(uint32_t i);
+__attribute__ ((__pure__)) uint32_t isqrt(uint32_t i);
 
 #endif

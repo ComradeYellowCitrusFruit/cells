@@ -18,11 +18,11 @@ uint32_t isqrt(uint32_t i) {
 	if(i <= 1)
 		return i;
 
-	uint32_t a0 = i/2;
-	uint32_t a1 = (a0 + i/a0)/2;
+	uint32_t a0 = i >> 1;
+	uint32_t a1 = (a0 + i/a0) >> 1;
 	while(a1 < a0) {
 		a0 = a1;
-		a1 = (a0 + i/a0)/2;
+		a1 = (a0 + i/a0) >> 1;
 	}
 	return a0;
 }

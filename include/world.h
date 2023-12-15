@@ -34,4 +34,6 @@ void free_world(struct world *w);
 
 bool world_has_life(struct world *w);
 
+void step_cell(struct tile *t, struct world *w, uint32_t x, uint32_t y);
+
 #endif
