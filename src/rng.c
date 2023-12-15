@@ -51,12 +51,42 @@ static void aes(struct rng_generator *g)
 		__m128i ctr = _mm_load_si128(&g->iv);
 		__m128i tmp;
 
-		for(int j = 0; j < 9; j++)
-			ctr = _mm_aesenc_si128(
-				ctr, 
-				_mm_aeskeygenassist_si128(key, rcon[j])
-			);
-
+		ctr = _mm_aesenc_si128(
+                        ctr, 
+                        _mm_aeskeygenassist_si128(key, rcon[0])
+		);
+                ctr = _mm_aesenc_si128(
+                        ctr, 
+                        _mm_aeskeygenassist_si128(key, rcon[1])
+		);
+                ctr = _mm_aesenc_si128(
+                        ctr, 
+                        _mm_aeskeygenassist_si128(key, rcon[2])
+		);
+                ctr = _mm_aesenc_si128(
+                        ctr, 
+                        _mm_aeskeygenassist_si128(key, rcon[3])
+		);
+                ctr = _mm_aesenc_si128(
+                        ctr, 
+                        _mm_aeskeygenassist_si128(key, rcon[4])
+		);
+                ctr = _mm_aesenc_si128(
+                        ctr, 
+                        _mm_aeskeygenassist_si128(key, rcon[5])
+		);
+                ctr = _mm_aesenc_si128(
+                        ctr, 
+                        _mm_aeskeygenassist_si128(key, rcon[6])
+		);
+                ctr = _mm_aesenc_si128(
+                        ctr, 
+                        _mm_aeskeygenassist_si128(key, rcon[7])
+		);
+                ctr = _mm_aesenc_si128(
+                        ctr, 
+                        _mm_aeskeygenassist_si128(key, rcon[8])
+		);
 		ctr = _mm_aesenclast_si128(
 			ctr, 
 			_mm_aeskeygenassist_si128(key, rcon[9])
