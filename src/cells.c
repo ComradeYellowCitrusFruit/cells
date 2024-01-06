@@ -7,9 +7,11 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <math.h>
+#include <string.h>
 #include "include/cells.h"
 #include "include/rng.h"
 #include "include/world.h"
+#include "include/math.h"
 
 extern generator_handle main_rng;
 
@@ -122,7 +124,7 @@ static inline float input(struct cell *c, struct world *w,
 
 		case GENE_OSCILATOR:
 		/* no division by zero! */
-		if(c->oscil_ctr/c->oscil_dur & 1 == 0)
+		if((c->oscil_ctr/c->oscil_dur & 1) == 0)
 			return 1.0;
 		else
 			return -1.0;
@@ -141,8 +143,10 @@ static inline float input(struct cell *c, struct world *w,
 		break;
 
 		case GENE_FOOD_FORWARD:
-		return  index_forward(w, x, y, c->compass) == 1 ? 1.0 : 
-			(index_backward(w, x, y, c->compass) == 1 ? -1.0 : 0);
+		return  index_forward(w, x, y, c->compass)->type == 1 ? 1.0 : (
+			index_backward(w, x, y, c->compass)->type == 1? 
+				-1.0 : 
+				0);
 
 		case GENE_OBSTACLE_X:
 		if(INDEX_WORLD((*w), x + 1, y).type == 2) 
@@ -157,8 +161,10 @@ static inline float input(struct cell *c, struct world *w,
 			return -1.0;
 
 		case GENE_OBSTACLE_FORWARD:
-		return  index_forward(w, x, y, c->compass) == 2 ? 1.0 : 
-			(index_backward(w, x, y, c->compass) == 2 ? -1.0 : 0);
+		return  index_forward(w, x, y, c->compass)->type == 2 ? 1.0 : (
+			index_backward(w, x, y, c->compass)->type == 2?
+				-1.0 : 
+				0);
 
 		case GENE_DENSITY:
 		return density(w, x, y);
@@ -194,6 +200,7 @@ static inline float input(struct cell *c, struct world *w,
 		default:
 		return 0;
 	}
+	return 0;
 }
 
 static inline int output(struct cell **c, struct world *w,
@@ -213,7 +220,7 @@ gene_move_x:
 				break;
 
 				default:
-				return;
+				return 0;
 			}
 
 			memcpy(
@@ -233,7 +240,7 @@ gene_move_x:
 				break;
 
 				default:
-				return;
+				return 0;
 			}
 
 			memcpy(
@@ -245,7 +252,7 @@ gene_move_x:
 			*c = &INDEX_WORLD((*w), --(*x), *y).cell;
 			(*c)->compass = WEST;
 		}
-		return;
+		return 0;
 
 		case GENE_MOVE_Y:
 gene_move_y:
@@ -258,7 +265,7 @@ gene_move_y:
 				break;
 
 				default:
-				return;
+				return 0;
 			}
 
 			memcpy(
@@ -278,7 +285,7 @@ gene_move_y:
 				break;
 
 				default:
-				return;
+				return 0;
 			}
 
 			memcpy(
@@ -331,7 +338,7 @@ die:
 			return 0;
 
 		/* no division by zero! */
-		if((*c)->oscil_ctr/(*c)->oscil_dur & 1 == 0) {
+		if(((*c)->oscil_ctr/(*c)->oscil_dur & 1) == 0) {
 			if(in < 0) {
 				(*c)->oscil_ctr = tmp;
 			} else {
@@ -346,14 +353,14 @@ die:
 		}
 
 		(*c)->oscil_dur = tmp;
-		*energy++;
+		(*energy)++;
 		return 0;
 
 		case GENE_KILL_FORWARD:
 		if(in < 2)
-			victim = index_backward(w, x, y, (*c)->compass);
+			victim = index_backward(w, *x, *y, (*c)->compass);
 		else if(in > 2)
-			victim = index_forward(w, x, y, (*c)->compass);
+			victim = index_forward(w, *x, *y, (*c)->compass);
 		else
 			return 0;
 
@@ -367,9 +374,9 @@ die:
 		*  that way we can subtract energy from them if they win
 		*/
 		tmp = (*c)->energy;
-		(*c)->energy -= 2 + (victim->cell.energy <= 2)?
+		(*c)->energy -= 2 + ((victim->cell.energy <= 2)?
 			-2 :
-			victim->cell.energy - calc_death_energy(&victim->cell);
+			victim->cell.energy-calc_death_energy(&victim->cell));
 
 		if((*c)->energy == 0) {
 			/* they beat us in a fight, die with honor
@@ -386,6 +393,7 @@ die:
 		victim->type = 0;
 		(*c)->energy += calc_death_energy(&victim->cell);
 		
+		default:
 		return 0;
 	}
 }

@@ -7,11 +7,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 #include "include/world.h"
 #include "include/math.h"
 #include "include/rng.h"
-#include "include/genetics.h"
 
 extern generator_handle main_rng;
 
@@ -19,21 +17,21 @@ static void place_food(struct world *w, uint32_t num)
 {
 	for(int i = 0; i < num * (w->food_gen_iters/4); i++) {
 		unsigned int ax, ay;
+		struct tile t;
 		ax = gen32(main_rng) % w->length;
 		ay = gen32(main_rng) % w->height;
+		t = INDEX_WORLD((*w), ax, ay);
 
-		switch(INDEX_WORLD((*w), ax, ay).type) {
+		switch(t.type) {
 			case 1:
 			case 2:
 			i--;
 			break;
 
 			default:
-			INDEX_WORLD((*w), ax, ay).type = 1;
-			INDEX_WORLD((*w), ax, ay)
-				.dead.id = gen64(main_rng);
-			INDEX_WORLD((*w), ax, ay)
-				.dead.energy = isqrt(gen32(main_rng));
+			t.type = 1;
+			t.dead.id = gen64(main_rng);
+			t.dead.energy = isqrt(gen32(main_rng));
 			break;
 		}
 	}
@@ -52,21 +50,20 @@ void init_world(struct world *w,
 
 	for(int i = 0; i < num_cells; i++) {
 		unsigned int ax, ay;
+		struct tile t;
 		ax = gen32(main_rng) % x;
 		ay = gen32(main_rng) % y;
+		t = INDEX_WORLD((*w), ax, ay);
 
-		switch(INDEX_WORLD((*w), ax, ay).type) {
+		switch(t.type) {
 			case 1:
 			case 2:
 			i--;
 			break;
 
 			default:
-			INDEX_WORLD((*w), ax, ay).type = 2;
-			gen_random_cell(
-				&INDEX_WORLD((*w), ax, ay).cell,
-				main_rng
-			);
+			t.type = 2;
+			gen_random_cell(&t.cell, main_rng);
 			break;
 		}
 	}
