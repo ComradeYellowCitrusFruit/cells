@@ -141,8 +141,7 @@ static void aes(struct rng_generator *g)
 
 /* salsa20 because it has less diffusion */
 static void salsa20(struct rng_generator *g) {
-	/* I just increased the keysize to 256 bits
-	*  */
+	/* I just increased the keysize to 256 bits */
 	for(int i = 0; i < 8; i += 4, g->ctr++) {
 		uint32_t key[] = {
 			(uint32_t)(0x65787061), 

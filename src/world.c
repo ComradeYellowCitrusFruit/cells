@@ -37,10 +37,10 @@ static void place_food(struct world *w, uint32_t num)
 	}
 }
 
-void init_world(struct world *w,
-	unsigned int x, unsigned int y, unsigned int it) 
+void init_world(struct world *w, unsigned int x, unsigned int y,
+	unsigned int it, unsigned int c)
 {
-	uint32_t num_cells = isqrt((x*y))/8;
+	c  = c ? c : isqrt((x*y))/8;
 	it = (it > 4) ? it : 4 ;
 	w->height = y;
 	w->length = x;
@@ -48,7 +48,7 @@ void init_world(struct world *w,
 	w->food_gen_iters = it;
 	w->grid = calloc(x * y, sizeof(struct tile));
 
-	for(int i = 0; i < num_cells; i++) {
+	for(int i = 0; i < c; i++) {
 		unsigned int ax, ay;
 		struct tile t;
 		ax = gen32(main_rng) % x;
@@ -68,7 +68,7 @@ void init_world(struct world *w,
 		}
 	}
 
-	place_food(w, num_cells/4);
+	place_food(w, c/4);
 }
 
 void free_world(struct world *w) 

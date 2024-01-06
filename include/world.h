@@ -28,7 +28,8 @@ struct world {
 	struct tile *grid;
 };
 
-void init_world(struct world *w, unsigned int x, unsigned int y, unsigned i);
+void init_world(struct world *w, unsigned int x, unsigned int y, 
+	unsigned int i, unsigned int c);
 void step_world(struct world *w);
 void free_world(struct world *w);
 

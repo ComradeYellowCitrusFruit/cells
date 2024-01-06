@@ -11,8 +11,8 @@
 #include "include/lib/stb_image_write.h"
 
 #define COLOR_HASH(x) ({ \
-	uint32_t __v = __builtik_popcount(x) ; \	
-	__v = (__v) ? __v * __v * __v * 2 : 1 ; \
+	uint32_t __v = __builtin_popcount(x); \
+	__v = (__v) ? __v * __v * __v * 2 : 1; \
 	(isqrt(__v) & 0xff); \
 })
 
@@ -29,7 +29,7 @@ uint32_t default_colorgen(struct tile *t)
 		uint32_t r = COLOR_HASH(t->cell.genes[0]),
 			 g = COLOR_HASH(t->cell.genes[1]),
 			 b = COLOR_HASH(t->cell.genes[2]),
-			 a = COLOR_HASH(t->cell.genes[3]),
+			 a = 255,
 			 tmp = 0xff - ((t->cell.energy & 0xff) >> 2);
 		return RGBA(r - tmp, g - tmp, b - tmp, a - tmp);
 	}
@@ -68,8 +68,12 @@ void *render(struct world *w, const char *filename,
 		}
 	}
 
-	if(settings.write_to_file || filename != NULL)
+	if((settings.write_to_file && filename != NULL) || filename != NULL)
 		stbi_write_png(filename, x, y, color_size, fb, 0);
 	
 	return fb;
+}
+
+void free_render_buffer(void *renderbuf) {
+	free(renderbuf);
 }
