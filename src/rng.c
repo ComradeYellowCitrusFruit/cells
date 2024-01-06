@@ -35,12 +35,12 @@
 	a ^= ROL(d + c, 18))
 
 struct rng_generator {
-	uint64_t seed[2];
+	uint32_t seed[8];
 	uint64_t iv;
 	uint64_t ctr;
 	union {
 		uint64_t state[8]; /* 512/64 */
-	uint8_t bytes[64]; /* 512/8 */
+		uint8_t bytes[64]; /* 512/8 */
 	};
 	uint64_t byte_ctr;
 };
@@ -82,7 +82,7 @@ static uint32_t aes_subword(uint32_t w) {
 		0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16
 	};
 
-	return  sbox[w & 0xff] | 
+	return   sbox[w & 0xff] | 
 		(sbox[(w >> 8) & 0xff] << 8) |
 		(sbox[(w >> 16) & 0xff] << 16) | 
 		(sbox[(w >> 24) & 0xff] << 24);
@@ -102,12 +102,15 @@ static void aes_keygen(__m128i key, uint32_t *keys)
 	
 	/* Optimize out the first round key bits */
 	_mm_store_si128(keys, key);
+	_mm_store_si128(keys + 4, key);
 	
-	for(int i = 4; i < 44; i++) {
-		if(i % 4 == 0) 
-			keys[i] = keys[i-4] ^ aes_subword(ROL(keys[i-1], 8)) ^ rcon[i/4];
+	for(int i = 8; i < 120; i++) {
+		if(i % 8 == 0) 
+			keys[i] = keys[i-8] ^ aes_subword(ROL(keys[i-1], 8)) ^ rcon[i/8];
+		else if(i % 4 == 0)
+			keys[i] = keys[i-8] ^ aes_subword(keys[i-1]);
 		else
-		 	keys[i] = keys[i-4] ^ keys[i-1];
+		 	keys[i] = keys[i-8] ^ keys[i-1];
 	}
 }
 
@@ -119,27 +122,17 @@ static void aes(struct rng_generator *g)
 	for(int i = 0; i < 8; i += 2, g->ctr++) {
 		__m128i ctr = _mm_load_si128(&g->iv);
 		__m128i tmp;
-		uint32_t keybuf[4*11]; /* 4R */
+		uint32_t keybuf[8*15]; /* 4R */
 		aes_keygen(key, keybuf);
 
-		ctr = _mm_aesenc_si128(
-			ctr, 
-			_mm_aeskeygenassist_si128(key, 0x01)
-		);
-
-		for(int k = 0; k < 10; k++) {
+		for(int k = 0; k < 15; k++) {
 			tmp = _mm_load_si128(&keybuf[i * 4]);
 
-			if(k == 9)
+			if(k == 14)
 				ctr = _mm_aesenclast_si128(ctr, tmp);
 			else
 			 	ctr = _mm_aesenc_si128(ctr, tmp);
 		}
-
-		ctr = _mm_aesenclast_si128(
-			ctr, 
-			_mm_aeskeygenassist_si128(key, 0x36)
-		);
 
 		tmp = _mm_load_si128(&g->state[i]);
 		_mm_store_si128(&g->state[i], _mm_xor_si128(tmp, ctr));
@@ -148,30 +141,26 @@ static void aes(struct rng_generator *g)
 
 /* salsa20 because it has less diffusion */
 static void salsa20(struct rng_generator *g) {
-	/* hard to understand but this creates the matrix, using bitmath 
-	*  to avoid using pointer magic. use only 128 bits of key to
-	*  keep diffusion lower
-	*  that probably also has some weird side-effects but we'll see
-	*/
-
+	/* I just increased the keysize to 256 bits
+	*  */
 	for(int i = 0; i < 8; i += 4, g->ctr++) {
 		uint32_t key[] = {
-			0x65787061, 
-			(uint32_t)(g->seed[0] >> 32),
-			(uint32_t)(g->seed[0] & 0xffffffff), 
-			(uint32_t)(g->seed[1] >> 32), 
-			0x6e642033,
-			(uint32_t)(g->seed[1] & 0xffffffff),
+			(uint32_t)(0x65787061), 
+			(uint32_t)(g->seed[0]),
+			(uint32_t)(g->seed[1]), 
+			(uint32_t)(g->seed[2]), 
+			(uint32_t)(0x6e642033),
+			(uint32_t)(g->seed[3]),
 			(uint32_t)(g->iv >> 32), 
-			(uint32_t)(g->iv & 0xffffffff),
+			(uint32_t)(g->iv & UINT32_MAX),
 			(uint32_t)(g->ctr >> 32), 
-			(uint32_t)(g->ctr & 0xffffffff),
-			0x322d6279, 
-			(uint32_t)(g->seed[0] >> 32),
-			(uint32_t)(g->seed[0] & 0xffffffff),
-			(uint32_t)(g->seed[1] >> 32), 
-			(uint32_t)(g->seed[1] & 0xffffffff), 
-			0x7465206b
+			(uint32_t)(g->ctr & UINT32_MAX),
+			(uint32_t)(0x322d6279), 
+			(uint32_t)(g->seed[4]),
+			(uint32_t)(g->seed[5]),
+			(uint32_t)(g->seed[6]), 
+			(uint32_t)(g->seed[7]), 
+			(uint32_t)(0x7465206b)
 		};
 
 		QR(key[0], key[4], key[8], key[12]);
