@@ -7,6 +7,7 @@
 #include <wmmintrin.h> 
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #ifndef _WIN32
 #include <unistd.h>

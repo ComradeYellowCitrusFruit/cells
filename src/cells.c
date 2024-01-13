@@ -12,6 +12,7 @@
 #include "include/rng.h"
 #include "include/world.h"
 #include "include/math.h"
+#include "include/util.h"
 
 extern generator_handle main_rng;
 
@@ -208,20 +209,16 @@ static inline int output(struct cell **c, struct world *w,
 {
 	unsigned int tmp;
 	struct tile *victim;
+
 	switch(g & GENE_OUTPUT_BITS) {
 		case GENE_MOVE_X:
 gene_move_x:
 		if(in > 1.0) {
-			switch(INDEX_WORLD((*w), *x + 1, *y).type) {
-				case 1:
+			if(INDEX_WORLD((*w), *x + 1, *y).type == 1)
 				(*c)->energy += INDEX_WORLD((*w), *x + 1, *y)
 					.dead.energy;
-				case 0:
-				break;
-
-				default:
+			else if(INDEX_WORLD((*w), *x - 1, *y).type == 0)
 				return 0;
-			}
 
 			memcpy(
 				&INDEX_WORLD((*w), *x + 1, *y),
@@ -231,17 +228,13 @@ gene_move_x:
 			INDEX_WORLD((*w), *x, *y).type = 0;
 			*c = &INDEX_WORLD((*w), ++(*x), *y).cell;
 			(*c)->compass = EAST;
+			break;
 		} else if(in < -1.0) {
-			switch(INDEX_WORLD((*w), *x - 1, *y).type) {
-				case 1:
+			if(INDEX_WORLD((*w), *x - 1, *y).type == 1)
 				(*c)->energy += INDEX_WORLD((*w), *x - 1, *y)
 					.dead.energy;
-				case 0:
-				break;
-
-				default:
+			else if(INDEX_WORLD((*w), *x - 1, *y).type == 0)
 				return 0;
-			}
 
 			memcpy(
 				&INDEX_WORLD((*w), *x - 1, *y),
@@ -251,22 +244,18 @@ gene_move_x:
 			INDEX_WORLD((*w), *x, *y).type = 0;
 			*c = &INDEX_WORLD((*w), --(*x), *y).cell;
 			(*c)->compass = WEST;
+			break;
 		}
 		return 0;
 
 		case GENE_MOVE_Y:
 gene_move_y:
 		if(in > 1.0) {
-			switch(INDEX_WORLD((*w), *x, *y + 1).type) {
-				case 1:
+			if(INDEX_WORLD((*w), *x, *y + 1).type == 1)
 				(*c)->energy += INDEX_WORLD((*w), *x, *y + 1)
 					.dead.energy;
-				case 0:
-				break;
-
-				default:
+			else if(INDEX_WORLD((*w), *x, *y + 1).type == 0)
 				return 0;
-			}
 
 			memcpy(
 				&INDEX_WORLD((*w), *x, *y + 1),
@@ -276,6 +265,7 @@ gene_move_y:
 			INDEX_WORLD((*w), *x, *y).type = 0;
 			*c = &INDEX_WORLD((*w), *x, ++(*y)).cell;
 			(*c)->compass = NORTH;
+			break;
 		} else if(in < -1.0) {
 			switch(INDEX_WORLD((*w), *x, *y  - 1).type) {
 				case 1:
@@ -296,13 +286,13 @@ gene_move_y:
 			INDEX_WORLD((*w), *x, *y).type = 0;
 			*c = &INDEX_WORLD((*w), *x, --(*y)).cell;
 			(*c)->compass = SOUTH;
+			break;
 		}
 		return 0;
 
 		case GENE_COMMIT_SUICIDE:
 		if(fabsf(in) > 3.5f) {
-die:
-			/* suicide/death is indicated with a -1 returned,
+			/* suicide is indicated with a -1 returned,
 			*  a null *c, and a 1 in INDEX((*w), *x, *y).type 
 			*/
 			INDEX_WORLD((*w), *x, *y).type = 1;
@@ -353,11 +343,10 @@ die:
 		}
 
 		(*c)->oscil_dur = tmp;
-		(*energy)++;
-		return 0;
+		break;
 
 		case GENE_KILL_FORWARD:
-		if(in < 2)
+		if(in < -2)
 			victim = index_backward(w, *x, *y, (*c)->compass);
 		else if(in > 2)
 			victim = index_forward(w, *x, *y, (*c)->compass);
@@ -366,7 +355,7 @@ die:
 
 		if(victim->type == 1) {
 			(*c)->energy += victim->dead.energy;
-			return 0;
+			break;
 		} else if(victim->type == 0)
 			return 0;
 		
@@ -386,31 +375,72 @@ die:
 
 			(*c)->energy = tmp;
 			victim->cell.energy -= 2 + tmp - calc_death_energy(*c);
-			goto die;
+
+			INDEX_WORLD((*w), *x, *y).type = 1;
+			INDEX_WORLD((*w), *x, *y)
+				.dead.energy = calc_death_energy((*c));
+			*c = NULL;
+			return 0x6c6f7373; /* loss in ascii in hex */
 		}
 
 		/* we beat them, now we reap the rewards */
 		victim->type = 0;
 		(*c)->energy += calc_death_energy(&victim->cell);
-		
+		return 0x6b696c6c; /* kill in ascii in hex */
+
 		default:
 		return 0;
 	}
+	(*energy)++;
 }
 
-void step_cell(struct tile *t, struct world *w, uint32_t x, uint32_t y)
+void step_cell(struct tile *t, struct world *w, struct statistics *stats, 
+	uint32_t x, uint32_t y)
 {
 	struct cell *c;
+	stats->food = t->type == 1 ? 1 : 0 ;
 	if(t->type != 2 || t->cell.updated)
 		return;
 
 	c = &t->cell;
 
-	if(!c->energy) {
+	if(
+		c->energy == 0 || /* starvation */
+		c->age == 2048 || /* and old age */
+		(c->age >= 1116 && unlikely(gen32(main_rng) == 0x64696521))
+	) {
+		stats->death++;
+		if(c->energy == 0)
+			stats->starve++;
+		else
+		 	stats->old_age++;
+		stats->food++;
+
 		/* commit die */
 		t->type = 1;
 		t->dead.energy = calc_death_energy(c);
 		return;
+	}
+	stats->pop++;
+
+	/* birth. ser in ascii, Spanish for "to be" */
+	if(c->energy >= 8 && unlikely((gen32(main_rng) & 0x00ffffff) == 0x736572)) {
+		struct tile *n;
+
+		do {
+			n = index_forward(w, x, y, c->compass);
+		} while(n->type == 2);
+		if(n->type == 1)
+			c->energy += n->dead.energy;
+
+		n->cell.energy = c->energy/4;
+		c->energy /= 2;
+		
+		n->cell.id = gen64(main_rng);
+		n->cell.age = 0;
+		n->cell.oscil_ctr = c->oscil_ctr;
+		n->cell.oscil_dur = c->oscil_dur;
+		duplicate_genes(c->genes, n->cell.genes);
 	}
 
 	for(int i = 0; i < 4; i++) {
@@ -432,10 +462,16 @@ void step_cell(struct tile *t, struct world *w, uint32_t x, uint32_t y)
 		gene_input = fminf(fmaxf(gene_input, -4.0), 4.0);
 
 		tmp = output(&c, w, &x, &y, c->genes[i], gene_input, &actions);
-		if(tmp == -1 && c == NULL) {
-			/* we have committed suicide. let's return */
+		if(c == NULL) {
+			if(tmp == -1)
+				stats->suicide++;
+			else
+			 	stats->murder++;
 			return;
 		}
+
+		if(tmp == 0x6b696c6c)
+			stats->murder++;
 	}
 
 	c->updated = true;

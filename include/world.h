@@ -28,13 +28,25 @@ struct world {
 	struct tile *grid;
 };
 
+struct statistics {
+	unsigned int pop;
+	unsigned int death;
+	unsigned int food;
+	unsigned int old_age;
+	unsigned int murder;
+	unsigned int starve;
+	unsigned int suicide;
+	unsigned int births;
+};
+
 void init_world(struct world *w, unsigned int x, unsigned int y, 
 	unsigned int i, unsigned int c);
-void step_world(struct world *w);
+void step_world(struct world *w, struct statistics *stats);
 void free_world(struct world *w);
 
 bool world_has_life(struct world *w);
 
-void step_cell(struct tile *t, struct world *w, uint32_t x, uint32_t y);
+void step_cell(struct tile *t, struct world *w, struct statistics *stats,
+	uint32_t x, uint32_t y);
 
 #endif

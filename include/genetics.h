@@ -44,8 +44,8 @@
 #define GENE_COMMIT_SUICIDE  0x6
 
 #define SANITIZE_GENE(g) ( \
-        ((((g & GENE_INPUT_BITS) >> 24) % 0xf) << 24) | \
-        (g & GENE_OUTPUT_BITS % 7) | \
+        ((((g & GENE_INPUT_BITS) >> 24) % 13) << 24) | \
+        ((g & GENE_OUTPUT_BITS) % 7) | \
         (g & GENE_STRENGTH_BITS)) /* TODO: sanitize strenth too*/
 
 typedef uint32_t gene_t;

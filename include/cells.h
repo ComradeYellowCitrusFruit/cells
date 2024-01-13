@@ -6,6 +6,7 @@
 #ifndef CELLS_CELLS_H__
 #define CELLS_CELLS_H__
 
+#include <stdbool.h>
 #include "include/genetics.h"
 #include "include/rng.h"
 

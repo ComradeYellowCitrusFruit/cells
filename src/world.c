@@ -87,16 +87,16 @@ bool world_has_life(struct world *w)
 	return false;
 }
 
-void step_world(struct world *w)
+void step_world(struct world *w, struct statistics *stats)
 {
 	/* first things first, put down new food */
-	if((++w->iters) % w->food_gen_iters == 0)
+	if((w->iters += 1) % w->food_gen_iters == 0)
 		place_food(w, isqrt((w->length * w->height))/32);
 
 	/* next, iterate through each cell */
 	for(uint32_t y = 0; y < w->length; y++) {
 		for(uint32_t x = 0; x < w->length; x++) {
-			step_cell(&INDEX_WORLD((*w), x, y), w, x, y);
+			step_cell(&INDEX_WORLD((*w), x, y), w, stats, x, y);
 		}
 	}
 }
